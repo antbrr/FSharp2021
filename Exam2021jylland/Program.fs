@@ -52,7 +52,8 @@ let rec path (P(c,_) as p)(ms: move list) =
     | [] -> [c]
     | Forward x :: xs -> c :: (path (step p (Forward x)) xs)
     | x :: xs -> path (step p x) xs
-
+    
+//1.5
 let path2 p (ms: move list) =
     let rec aux acc (P (c, _) as p) ms' =
         match ms' with
@@ -60,6 +61,58 @@ let path2 p (ms: move list) =
         | Forward x :: xs -> aux (c::acc) (step p (Forward x)) xs
         | x :: xs -> aux acc (step p x) xs
     aux [] p ms
+
+//1.6
+
+(*
+Lets make the following function call: 
+
+
+
+C(0,0) :: path (P (C (0, 0), North) (Forward 5))
+    [TurnRight; Forward 10;];
+
+C(0,0) :: path (P(C(0,-5),North)) 
+    [TurnRight; Forward 10;];
+
+C(0,0) :: path P(C(0,-5),North) (TurnRight))
+    [Forward 10];
+
+C(0,0) :: path P(C(0,-5),East))
+    [Forward 10];
+
+C(0,0) :: C(0,-5) :: pathP(C(0,-5),East))
+    [Forward 10];
+
+C(0,0) :: C(0,-5) :: pathP(C(0,-5), Forward 10)) []
+
+C(0,0) :: C(0,-5) :: path P(C(10,-5)) []
+
+C(0,0) :: C(0, -5) :: C(10,-5)
+
+[C(0,0); C(0,-5); C(10,-5)];
+
+
+
+
+
+
+let rec path (P(c,_) as p)(ms: move list) =
+    match ms with
+    | [] -> [c]
+    | Forward x :: xs -> c :: (path (step p (Forward x)) xs)
+    | x :: xs -> path (step p x) xs
+
+let move (dist: int) (dir: direction) (C(x,y): coord) =
+    match dir with
+    |North -> C(x,y-dist)
+    |South -> C(x,y+dist)
+    |West -> C(x-dist,y)
+    |East -> C(x+dist,y)
+
+    
+    
+*)
         
 
 //path3 tbd
@@ -147,13 +200,145 @@ let foo2 f =
  aux
 
 let bazSeq = Seq.initInfinite baz
+ 
+ //Question 3: Guess the next sequence element
+ 
+ 
+ //3.1
+type element = E of int list
+
+//3.2
+let elToString (el:element) = el.ToString()
+
+let elFromString (s: string) =
+    s.ToCharArray()
+    |> List.ofArray
+    |> List.map(fun x -> int x)
+    |> E
+ 
+//3.3
+
+//OBS: Jespers kode
+
+let nextElement =
+        let rec numToList =
+            function
+            | 0 -> []
+            | x -> (x % 10) :: numToList (x / 10)
+
+        let rec aux num x acc =
+            function
+            | []                 -> x::(numToList num)@acc |> List.rev
+            | y :: xs when x = y -> aux (num + 1) x acc xs
+            | y :: xs            -> aux 1 y (x::(numToList num)@acc) xs
+
+        function
+        | [] -> []
+        | x :: xs -> aux 1 x [] xs
+
+//3.4
+
+//OBS: Jespers kode
+
+let elSeq = Seq.unfold (fun n -> let n' = nextElement n in Some(n, n'))
+let rec elSeq2 n = seq {yield n; yield! elSeq2 (nextElement n)}
+
+    (*
+
+    Q: Why would Seq.initInfinite not be an appropriate choice to
+       write a function like elSeq?
+
+    A: Seq.initInfinite takes a funciton that expects an index in the
+         sequence as an argument and computes the element at that index
+         in the sequence. In our use case this is bad for two reasons
+       
+       1: We don't even have a function that would calculate 
+           the `nth` element from a given starting element
+           we'd have to create one.
+          
+       2: Every time we construct an element in the sequence we would
+   have to recompute every element up until that element in the sequence. 
+           As the sequence gets longer this becomes very expensive.
+
+    *)
+
+ //3.5
+ 
+ (*
+    open JParsec.TextParser
+
+    (* Determining failure on this one is harder than intended. 
+          If your parser only parsed a partial string, up until parsing failed, 
+          you were given full credit. In this example we have added 
+       a terminating newline to demonstrate how it could be done
+       with the API at hand but leaving this out gave you full credit.
+       
+       Another option would be to compare the length of the resulting
+       list with the length of the parsed string. *)
+
+    let elParse = many (digit |>> (int >> (fun x -> x - int '0'))) .>> pchar '\n'
+    let elFromString2 str =
+        run elParse (str + "\n") |>
+        getSuccess
+ *)
+ 
+ //4: Rings
+ 
+ //4.1
+ 
+type 'a ring = R of 'a list * 'a list
+
+//4.2
+
+let length (R(a,b)) = List.length a + List.length b
+
+let rec ringFromList(lst: 'a list) = R([],lst)
+
+let rec ringToList(R(xs,ys)) =
+    ys @ List.rev xs
+
+//4.3
+
+let empty = R([],[])
+
+let push (x: 'a) (R(xs,ys)) = R(xs, x::ys)
+
+let peek (R(a,b)) =
+    match R(a,b) with
+    | R([],[]) -> None
+    | R(a,[]) ->
+        let arev = List.rev a
+        Some(List.head arev)
+    | R(_, y :: _) -> Some y
+
+let pop (R(a,b)) =
+    match R(a,b) with
+    |R([],[]) -> None
+    |R(a,[]) -> Some(R([],List.tail(List.rev a)))
+    |R(a, _::b) -> Some(R(a,b))
+    
+let cw (R(a,b)) =
+    match R(a,b) with
+    | R([],[]) -> R([],[])
+    | R([],_ :: xs) ->
+        let brev = List.rev b
+        let brevhead = List.head brev
+        R(List.tail brev, [brevhead])
+    | R(x:: xs,_) ->R(xs, x::b)
+
+let ccw (R(a,b)) =
+    match R(a,b) with
+    | R([],[]) -> R([],[])
+    | R(a,[]) ->
+        let arev = List.rev a
+        let arevhead = List.head arev
+        R([arevhead],List.tail arev)
+    | R(xs,y::ys) ->R(y::xs, ys)
+        
 
 
-let rec barbaz x =
- let baz = foo barbaz
- match x with
- | 0 -> 0
- | 1 -> 1
- | y -> baz (y - 1) + baz (y - 2)        
+    
+
+    
   
         
