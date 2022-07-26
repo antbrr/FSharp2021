@@ -1,3 +1,5 @@
+open System
+
 type direction = North | East | South | West
 type coord = C of int * int
 
@@ -215,72 +217,42 @@ let elFromString (s: string) =
     |> List.ofArray
     |> List.map(fun x -> int x)
     |> E
+
+ //3.3
  
-//3.3
+let nextElement _ = failwith "not implemented"
 
-//OBS: Jespers kode
+ 
+ //3.4
+let elSeq _ = failwith "not implemented"
+let elSeq2 _ = failwith "not implemented"
 
-let nextElement =
-        let rec numToList =
-            function
-            | 0 -> []
-            | x -> (x % 10) :: numToList (x / 10)
-
-        let rec aux num x acc =
-            function
-            | []                 -> x::(numToList num)@acc |> List.rev
-            | y :: xs when x = y -> aux (num + 1) x acc xs
-            | y :: xs            -> aux 1 y (x::(numToList num)@acc) xs
-
-        function
-        | [] -> []
-        | x :: xs -> aux 1 x [] xs
-
-//3.4
-
-//OBS: Jespers kode
-
-let elSeq = Seq.unfold (fun n -> let n' = nextElement n in Some(n, n'))
-let rec elSeq2 n = seq {yield n; yield! elSeq2 (nextElement n)}
-
-    (*
-
-    Q: Why would Seq.initInfinite not be an appropriate choice to
-       write a function like elSeq?
-
-    A: Seq.initInfinite takes a funciton that expects an index in the
-         sequence as an argument and computes the element at that index
-         in the sequence. In our use case this is bad for two reasons
-       
-       1: We don't even have a function that would calculate 
-           the `nth` element from a given starting element
-           we'd have to create one.
-          
-       2: Every time we construct an element in the sequence we would
-   have to recompute every element up until that element in the sequence. 
-           As the sequence gets longer this becomes very expensive.
-
-    *)
+// Why would Seq.initInfinite not be an appropriate choice to write a function like elSeq ?
 
  //3.5
- 
- (*
-    open JParsec.TextParser
-
-    (* Determining failure on this one is harder than intended. 
-          If your parser only parsed a partial string, up until parsing failed, 
-          you were given full credit. In this example we have added 
-       a terminating newline to demonstrate how it could be done
-       with the API at hand but leaving this out gave you full credit.
-       
-       Another option would be to compare the length of the resulting
-       list with the length of the parsed string. *)
-
-    let elParse = many (digit |>> (int >> (fun x -> x - int '0'))) .>> pchar '\n'
+ //
+open JParsec
+open JParsec.TextParser
+ let elParse = many (digit |>> (int >> (fun x -> x - int '0'))) .>> pchar '\n'
     let elFromString2 str =
-        run elParse (str + "\n") |>
-        getSuccess
+        E(run elParse (str + "\n") |>
+        getSuccess)
+
+ (* Question 4.5 *)
+    
+  
+   
+    (*let pushParse = pstring "PUSH" >>. (many1 (pchar(' '))) >>. pint32 |>> Push
+    
+    let addParse = pstring "ADD" |>> fun _ -> Add
+    
+    let multParse = pstring "MULT" |>> fun _ -> Mult
+        
+    let parseStackProg =
+        many ( (many (pchar(' '))) >>. (multParse <|> addParse <|> pushParse) .>> many (pchar(' ')) .>> pchar '\n')
+
  *)
+
  
  //4: Rings
  
