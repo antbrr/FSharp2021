@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Compile Include="JParsec.fsi" />
         <Compile Include="JParsec.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
