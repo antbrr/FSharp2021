@@ -1,3 +1,7 @@
+module Exam2021
+open System
+open Microsoft.FSharp.Core
+
 type direction = North | East | South | West
 type coord = C of int * int
 
@@ -243,79 +247,82 @@ let bazSeq = Seq.initInfinite baz
 type element = E of int list
 
 //3.2
-let elToString (el:element) = el.ToString()
+let elToString (E(lst)) =
+    lst
+    |> List.map(fun el -> string el)
+    |> String.concat ""
+    
 
 let elFromString (s: string) =
-    s.ToCharArray()
-    |> List.ofArray
-    |> List.map(fun x -> int x)
+     s
+    |> List.ofSeq
+    |> List.map(fun x -> (int x - int '0'))
     |> E
+
+ //3.3
  
-//3.3
+let nextElement el =
+    let rec aux acc last n lst1 =
+        match lst1 with
+        | [] ->
+            E(List.rev(last :: n :: acc))
+        | x :: xs when x = last -> aux acc x (n+1) xs
+        | x :: xs -> aux (last :: n :: acc) x 1 xs
+    let (E lst1) = elToString el |> elFromString
+    List.tryHead lst1
+    |> Option.map (fun elem -> aux [] elem 0 lst1)
+    |> Option.defaultValue (E[])
 
-//OBS: Jespers kode
+   
+     
+     
 
-let nextElement =
-        let rec numToList =
-            function
-            | 0 -> []
-            | x -> (x % 10) :: numToList (x / 10)
+ 
+ //3.4
+let elSeq (el: element) = Seq.unfold(fun st -> Some(st,nextElement st)) el
+let rec elSeq2 e =
+ seq {
+     let next = nextElement e
+     yield e
+     yield! elSeq2 next
+ }
+   
 
-        let rec aux num x acc =
-            function
-            | []                 -> x::(numToList num)@acc |> List.rev
-            | y :: xs when x = y -> aux (num + 1) x acc xs
-            | y :: xs            -> aux 1 y (x::(numToList num)@acc) xs
-
-        function
-        | [] -> []
-        | x :: xs -> aux 1 x [] xs
-
-//3.4
-
-//OBS: Jespers kode
-
-let elSeq = Seq.unfold (fun n -> let n' = nextElement n in Some(n, n'))
-let rec elSeq2 n = seq {yield n; yield! elSeq2 (nextElement n)}
-
-    (*
-
-    Q: Why would Seq.initInfinite not be an appropriate choice to
-       write a function like elSeq?
-
-    A: Seq.initInfinite takes a funciton that expects an index in the
-         sequence as an argument and computes the element at that index
-         in the sequence. In our use case this is bad for two reasons
-       
-       1: We don't even have a function that would calculate 
-           the `nth` element from a given starting element
-           we'd have to create one.
-          
-       2: Every time we construct an element in the sequence we would
-   have to recompute every element up until that element in the sequence. 
-           As the sequence gets longer this becomes very expensive.
-
-    *)
+// Why would Seq.initInfinite not be an appropriate choice to write a function like elSeq ?
 
  //3.5
  
- (*
-    open JParsec.TextParser
+open JParsec
+ 
+open JParsec.TextParser
 
-    (* Determining failure on this one is harder than intended. 
-          If your parser only parsed a partial string, up until parsing failed, 
-          you were given full credit. In this example we have added 
-       a terminating newline to demonstrate how it could be done
-       with the API at hand but leaving this out gave you full credit.
-       
-       Another option would be to compare the length of the resulting
-       list with the length of the parsed string. *)
+let elParse = many digit .>> pchar('\n') |>> (
+    fun lst -> List.map(fun c -> (int c - int '0')) lst |> E
+    )
+let elFromString2(str: string) =
+ run elParse str
+ |> getSuccess
+ 
+ 
 
-    let elParse = many (digit |>> (int >> (fun x -> x - int '0'))) .>> pchar '\n'
-    let elFromString2 str =
-        run elParse (str + "\n") |>
-        getSuccess
+
+ 
+
+ (* Question 4.5 *)
+    
+  
+   
+    (*let pushParse = pstring "PUSH" >>. (many1 (pchar(' '))) >>. pint32 |>> Push
+    
+    let addParse = pstring "ADD" |>> fun _ -> Add
+    
+    let multParse = pstring "MULT" |>> fun _ -> Mult
+        
+    let parseStackProg =
+        many ( (many (pchar(' '))) >>. (multParse <|> addParse <|> pushParse) .>> many (pchar(' ')) .>> pchar '\n')
+
  *)
+
  
  //4: Rings
  
@@ -369,7 +376,56 @@ let ccw (R(a,b)) =
         let arevhead = List.head arev
         R([arevhead],List.tail arev)
     | R(xs,y::ys) ->R(y::xs, ys)
+
+//4.4
+
+type StateMonad<'a, 'b> = SM of ('b ring -> ('a * 'b ring) option)
+let ret x = SM (fun st -> Some (x, st))
+let bind (SM m) f = SM (fun st ->
+    match m st with
+    | None -> None
+    | Some (x, st') ->
+    let (SM g) = f x
+    g st')
+let (>>=) m f = bind m f
+let (>>>=) m n = m >>= (fun () -> n)
+let evalSM (SM f) s = f s
         
+let smLength = SM (fun st -> Some(length st, st))
+
+let smPush x = SM (fun st -> Some((),(push x st)))
+
+let smPop = SM(fun st ->
+    match peek st with
+    | None -> None
+    | Some x -> Some(x,pop st |> Option.get))
+
+let smCW = SM(fun st -> Some( (), cw st))
+
+let smCCW = SM(fun st -> Some( (), ccw st))
+
+
+//4.5
+
+let ringStep =
+    smLength >>= (fun length -> if length < 2 then ret () else
+            smPop >>= (fun first ->
+                    smPop >>= fun second ->
+                               if (first + second) % 2 = 0 then ret ()
+                               else smPush second >>>= smPush first >>>= smCCW))
+    
+                                
+                                (*
+                                else
+                                    let first = smPop >>= (fun elem -> ret elem)
+                                    let second = smPop >>= (fun elem -> ret elem)
+                                    if first + second % 2 == 0 then smPop first smPop second
+                                    else*)
+
+let rec iterRemoveSumEven (x: uint32) =
+    match x with
+    | 0u -> ret ()
+    | n -> ringStep >>>= iterRemoveSumEven (n - 1u) 
 
 
     

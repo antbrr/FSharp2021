@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\F#ReExamPrep\\FSharp2021\\Exam2021jylland\\Exam2021jylland.fsproj": {}
+    "C:\\Users\\AMBre\\RiderProjects\\Exam2021jylland\\Exam2021jylland\\Exam2021jylland.fsproj": {}
   },
   "projects": {
-    "D:\\F#ReExamPrep\\FSharp2021\\Exam2021jylland\\Exam2021jylland.fsproj": {
+    "C:\\Users\\AMBre\\RiderProjects\\Exam2021jylland\\Exam2021jylland\\Exam2021jylland.fsproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\F#ReExamPrep\\FSharp2021\\Exam2021jylland\\Exam2021jylland.fsproj",
+        "projectUniqueName": "C:\\Users\\AMBre\\RiderProjects\\Exam2021jylland\\Exam2021jylland\\Exam2021jylland.fsproj",
         "projectName": "Exam2021jylland",
-        "projectPath": "D:\\F#ReExamPrep\\FSharp2021\\Exam2021jylland\\Exam2021jylland.fsproj",
-        "packagesPath": "C:\\Users\\Anton.000\\.nuget\\packages\\",
-        "outputPath": "D:\\F#ReExamPrep\\FSharp2021\\Exam2021jylland\\obj\\",
+        "projectPath": "C:\\Users\\AMBre\\RiderProjects\\Exam2021jylland\\Exam2021jylland\\Exam2021jylland.fsproj",
+        "packagesPath": "C:\\Users\\AMBre\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\AMBre\\RiderProjects\\Exam2021jylland\\Exam2021jylland\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Anton.000\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\AMBre\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -22,7 +22,8 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.pkg.github.com/jesper-bengtson/index.json": {}
         },
         "frameworks": {
           "net6.0": {
@@ -57,7 +58,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
         }
       }
     }
